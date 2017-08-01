@@ -1,0 +1,18 @@
+influxDB是分布式时序数据库
+
+时序数据一个明显的特征：每一条数据都带有时间戳，而且查询的时候也是时间相关的。
+一些典型的时序数据：
+    log
+    metric(指标)：比如函数调用时间等。
+    股价
+    汇率
+
+    metric的数据是k-v结构的，k是metric_name。[key][fields][timestamp],timestamp不写就是当前时间，还可以带一些tag
+    log的数据是半结构化的数据，比metric要复杂些。
+
+    influxDB天然就是为metric的数据来做的。比如流量、QPS(count)、错误率等。
+    ELK是为log的数据存在的。量不大的时候可以用ELK，量大的时候就不行了。
+
+
+
+

@@ -1,0 +1,66 @@
+日志格式：
+    66.249.69.131 - - [10/Aug/2016:03:20 +0800] "GET /robots.txt HTTP/1.1" 404 162 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+日志文件一条记录的字段：
+    IP
+    时间
+    方法
+    URL
+    版本
+    状态
+    长度
+    referer：HTTP Referer是header的一部分，当浏览器向web服务器发送请求的时候，一般会带上Referer，告诉服务器我是从哪个页面链接过来的，服务器藉此可以获得一些信息用于处理。比如从我主页上链接到一个朋友那里，他的服务器就能够从HTTP Referer中统计出每天有多少用户点击我主页上的链接访问他的网站。
+    UA（userAgent）：Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+
+【批处理 处理流程】：
+    开始 ——> 读入(一下子读完) ——> 解析 ——> 分析 ——> 展示 ——> 结束
+
+解析：
+    正则表达式
+
+可以做哪些分析 如何展示：
+    1.平均响应时间  --但是我们的日志字段里没有记录响应时间，暂时做不到
+
+    2.流量（字段里有每个页面的长度）       sum                 line chat(线图)
+    3.TOP 10 URL                    count之后取前10          bar chat(条形图)
+    4.TOP 10 IP                     count之后取前10          bar chat(条形图)
+    5.TOP 10 UA                     count之后取前10          bar chat(条形图)
+    6.一段时间内状态码的分布               group by            pie chat(饼图，但是不能展示时间，可以选用stack chat，百分比的面积图)
+    7.UA的分布                           group by            pie chat(饼图，但是不能展示时间，可以选用stack chat，百分比的面积图)
+    8.http版本的分布（知道了之后可以做对应的一些压缩） group by  pie chat(饼图，但是不能展示时间，可以选用stack chat，百分比的面积图)
+
+    如果我们日志中记录了cookie，就可以计算UV和UV了。另外通过IP其实可以解析出地理位置的，画世界地图。
+
+画图：
+python画图pygal模块，当然也可以用前端来画
+# pip install pygal
+
+
+
+【流式处理流程】：
+    开始 ——> 读入(tail -f方式) ——> 解析(流式分析) ——> 聚合(数据不是一条一条落地的) ——> 落地 ——> 结束
+
+    数据肯定不是收到一条数据落地一条的，假设每秒钟产生100条数据，聚合10s钟的数据为1条，这样10s就落地了一条数据。
+    我们先模拟一个数据源，ds.py
+
+$remote_addr, $http_x_forwarded_for 记录客户端IP地址
+$remote_user 记录客户端用户名称
+$request 记录请求的URL和HTTP协议
+$status 记录请求状态
+$body_bytes_sent 发送给客户端的字节数，不包括响应头的大小； 该变量与Apache模块mod_log_config里的“%B”参数兼容。
+$bytes_sent 发送给客户端的总字节数。
+$connection 连接的序列号。
+$connection_requests 当前通过一个连接获得的请求数量。
+$msec 日志写入时间。单位为秒，精度是毫秒。
+$pipe 如果请求是通过HTTP流水线(pipelined)发送，pipe值为“p”，否则为“.”。
+$http_referer 记录从哪个页面链接访问过来的
+$http_user_agent 记录客户端浏览器相关信息
+$request_length 请求的长度（包括请求行，请求头和请求正文）。
+$request_time 请求处理时间，单位为秒，精度毫秒； 从读入客户端的第一个字节开始，直到把最后一个字符发送给客户端后进行日志写入为止。
+              官网描述：request processing time in seconds with a milliseconds resolution; time elapsed between the first bytes were read from the client and the log write after the last bytes were sent to the client 。
+              指的就是从接受用户请求的第一个字节到发送完响应数据的时间，即包括接收请求数据时间、程序响应时间、输出响应数据时间。
+$upstream_response_time: 指从Nginx向后端（php-cgi)建立连接开始到接受完数据然后关闭连接为止的时间。
+                        从上面的描述可以看出，$request_time肯定比$upstream_response_time值大，特别是使用POST方式传递参数时，因为Nginx会把request body缓存住，接受完毕后才会把数据一起发给后端。
+                        所以如果用户网络较差，或者传递数据较大时，$request_time会比$upstream_response_time大很多。
+                        所以如果使用nginx的accesslog查看php程序中哪些接口比较慢的话，记得在log_format中加入$upstream_response_time。
+$time_iso8601 ISO8601标准格式下的本地时间。
+$time_local 通用日志格式下的本地时间。
