@@ -64,15 +64,16 @@ from influxdb import InfluxDBClient
 
 
 def read_log(path): # 生成器generator
+    '''一行一行读取日志并返回'''
     with open(path) as f:
-        yield from f #打开日志文件，逐行yield出来。yield from f 相当于下面两行代码
-        # for line in f:
-        #     yield line #你想返回什么就yield什么
+        yield from f
 
 def write_influxDB(lst):
+    '''写入InfluxDB数据库'''
     client.write_points(lst)
 
 def regular_line(line):
+    '''利用正则分析一行日志，存于字典中'''
     o = re.compile(pattern)
     m = o.search(line)
     field_dict = m.groupdict()
@@ -80,6 +81,7 @@ def regular_line(line):
     return field_dict
 
 def main():
+    '''主函数'''
     for line in read_log(path):
         field_dict = regular_line(line)
         lst = []
