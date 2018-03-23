@@ -1,0 +1,7 @@
+res?: Res_access_log
+mf?: Mf_access_log
+desginer?: Desginer_access_log
+weplus?: Weplus_access_log
+
+
+
