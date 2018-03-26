@@ -8,6 +8,12 @@ from urllib.parse import quote_plus as urlquote
 import re
 import os
 import yaml
+import logging, logging.config
+
+with open('conf/logging.yml', 'r') as f_conf:
+    dict_conf = yaml.load(f_conf)
+logging.config.dictConfig(dict_conf)
+logger = logging.getLogger('simpleExample')
 
 # 初始化数据库连接
 conn_str = 'mysql+pymysql://root:%s@172.16.7.180:3306/mydb_test' % urlquote('Wisedu@2017')
@@ -161,6 +167,7 @@ def generate_line_data(table_name, line_dict):
     m = __import__('python_mysql', fromlist=True)
     #print(m)
     table_class = getattr(m, table_name)  # 通过反射去模块m中找到代表那张表的类
+    logger.debug('对应的类为：%s' % table_class)
     #print(table_class)
     return table_class(host=line_dict['host'], remote_addr=line_dict['remote_addr'], time=line_dict['time'],
                       method=line_dict['method'], url=line_dict['url'], version=line_dict['version'],
@@ -179,12 +186,14 @@ def main():
         except yaml.YAMLError as exc:
             print(exc)
 
+    logger.info("开始一行一行处理日志。。。")
     for line in read_log(file):
         line_dict = regular_line(line)
         for log_code in log_code_dict.keys():
             if log_code in line_dict['url']: # 根据不同的url标识将记录分配到多个个不同的表中,比如统计网站的访问，统计移动框架的访问，res?和mf?、Desginer?
                 line = generate_line_data(log_code_dict.get(log_code), line_dict)
                 add(line)
+    logger.info("日志处理完成。。。")
 
 if __name__ == '__main__':
     pattern = '(?P<host>[\w+\.]+\w+) (?P<remote_addr>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) \[(?P<time>.*)\]'
