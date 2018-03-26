@@ -193,6 +193,11 @@ def main():
             if log_code in line_dict['url']: # 根据不同的url标识将记录分配到多个个不同的表中,比如统计网站的访问，统计移动框架的访问，res?和mf?、Desginer?
                 line = generate_line_data(log_code_dict.get(log_code), line_dict)
                 add(line)
+                # try :
+                #     i = 1/0
+                # except Exception as e:
+                #     logger.error(e, exc_info=True)
+                #     raise                
     logger.info("日志处理完成。。。")
 
 if __name__ == '__main__':
