@@ -180,7 +180,7 @@ def generate_line_data(table_name, line_dict):
 def main():
     #读取配置文件中日志标识及其对应的表名
     # read yaml file
-    with open("conf/log_code.yaml", "r+") as stream:
+    with open("conf/log_code.yaml", "r+") as stream: #如果这个程序需要放入crontab中跑，需要使用绝对路径，否则放入crontab中会找不到这个配置文件
         try:
             log_code_dict = yaml.load(stream)
         except yaml.YAMLError as exc:
@@ -197,7 +197,7 @@ def main():
                 #     i = 1/0
                 # except Exception as e:
                 #     logger.error(e, exc_info=True)
-                #     raise                
+                #     raise
     logger.info("日志处理完成。。。")
 
 if __name__ == '__main__':

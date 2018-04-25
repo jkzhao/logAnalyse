@@ -1,7 +1,7 @@
-res?: Res_access_log
-mf?: Mf_access_log
-desginer?: Desginer_access_log
-weplus?: Weplus_access_log
+res?: res_access_log
+mf?: mf_access_log
+desginer?: desginer_access_log
+weplus?: weplus_access_log
 
 
 
